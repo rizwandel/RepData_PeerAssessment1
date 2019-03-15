@@ -1,18 +1,20 @@
 Title: "Reproducible Research: Peer Assignment 1"
 Author: "Mohamed Rizwan"
-Date: "March 13, 2019"
+Date: "March 15, 2019"
 Output: html_document
-======================================================================================================================================================
+##loading libraries
 ```{r, results = 'hide', echo = FALSE}
 library(dplyr)
-library(ggplot2)
+library(lattice)
 ```
-#unzipped downloaded csv file in the working directory
+##Downloaded csv file from coursera in the working directory
+
+#unzip the file to get "activity.csv" file in the working directory
 ```{r}
 unzip("repdata_data_activity.zip")
 ```
-#1.Loading and preprocessing the data
-```{r, echo=TRUE}
+#1.reading and preprocessing the data
+```{r,cache= TRUE, echo=TRUE}
 act <- read.csv("activity.csv")
 act$date <- as.Date(act$date)
 head(act)
@@ -27,8 +29,11 @@ hist(by_date$totalsteps, xlab = "Total number of steps taken each day", main="Hi
 ```{r}
 summary(by_date)
 ```
+##From the summary, Mean = 10766  and Median = 10765
+
 #4.Time series plot of the average number of steps taken
 ```{r, echo=TRUE, results='show'}
+library(ggplot2)
 by_interval <- act %>% select(interval, steps) %>% na.omit() %>% group_by(interval) %>% summarize(averagesteps= mean(steps))
 ggplot(by_interval, aes(x=interval, y=averagesteps))+ geom_line()
 ```
@@ -41,6 +46,9 @@ by_interval[which(by_interval$averagesteps == max(by_interval$averagesteps)),]
 ##Total number of missing values, NAs in the dataset
 ```{r}
 missingvals <- sum(is.na(act))
+```
+#missingvals
+```{r}
 missingvals
 ```
 ##Replacing the NAs with mean for that 5 minutes interval the day
@@ -53,10 +61,13 @@ head(meandata)
 ```{r}
 by_date2 <- meandata %>% select(date, steps) %>% group_by(date) %>% summarize(totalsteps= sum(steps))
 ```
+
 ##Mean and median of the total number of steps taken per day
 ```{r}
 summary(by_date2)
 ```
+##From the summary, Mean = 10766  and Median = 10766
+
 #Histogram of the total number of steps taken each day with the NAs imputed/replaced
 ```{r}
 hist(by_date2$totalsteps, xlab = "Total number of steps taken each day", main="Histogram of Total number of steps taken each day", breaks = 20)
@@ -67,8 +78,13 @@ hist(by_date2$totalsteps, xlab = "Total number of steps taken each day", main="H
 mean_1 <- mean(by_date$totalsteps, na.rm = TRUE)
 mean_2 <- mean(by_date2$totalsteps)
 difference <- mean_2-mean_1
+```
+#difference
+```{r}
 difference
 ```
+## There's no difference in the means of the total steps from the previous dataset(by_date) and imputed dataset(by_date2) 
+
 #6.Differences in activity patterns between weekdays and weekends:
 ```{r, results= 'hide'}
 meandata$day <- weekdays(meandata$date)
@@ -78,6 +94,7 @@ meandata$weekend <- ifelse(meandata$day=="Saturday" | meandata$day=="Sunday", "W
 ```{r}
 mean_weekend_weekday <- aggregate(meandata$steps, by= list(meandata$weekend, meandata$interval), na.omit(mean))
 names(mean_weekend_weekday) <- c("weekend", "interval", "steps")
+head(mean_weekend_weekday)
 ```
 ##Panel plot showing the average number of steps in each interval weekdays and weekends
 ```{r, results="show"}
